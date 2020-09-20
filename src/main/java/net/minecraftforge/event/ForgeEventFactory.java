@@ -36,6 +36,7 @@ import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.effect.LightningBoltEntity;
+import net.minecraft.entity.item.FireworkRocketEntity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.monster.ZombieEntity;
 import net.minecraft.entity.passive.AnimalEntity;
@@ -63,6 +64,7 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.text.ChatType;
 import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.IWorld;
@@ -239,11 +241,20 @@ public class ForgeEventFactory
         return maxCanSpawnEvent.getResult() == Result.ALLOW ? maxCanSpawnEvent.getMaxPackSize() : entity.getMaxSpawnedInChunk();
     }
 
+    /**
+     * Removed in 1.16. Use {@link ForgeEventFactory#getPlayerDisplayName(PlayerEntity, ITextComponent)}
+     */
+    @Deprecated
     public static String getPlayerDisplayName(PlayerEntity player, String username)
+    {
+        return getPlayerDisplayName(player, new StringTextComponent(username)).getString();
+    }
+    
+    public static ITextComponent getPlayerDisplayName(PlayerEntity player, ITextComponent username)
     {
         PlayerEvent.NameFormat event = new PlayerEvent.NameFormat(player, username);
         MinecraftForge.EVENT_BUS.post(event);
-        return event.getDisplayname();
+        return event.getDisplaynameComponent();
     }
 
     public static float fireBlockHarvesting(NonNullList<ItemStack> drops, World world, BlockPos pos, BlockState state, int fortune, float dropChance, boolean silkTouch, PlayerEntity player)
@@ -628,6 +639,11 @@ public class ForgeEventFactory
     public static boolean onProjectileImpact(ThrowableEntity throwable, RayTraceResult ray)
     {
         return MinecraftForge.EVENT_BUS.post(new ProjectileImpactEvent.Throwable(throwable, ray));
+    }
+
+    public static boolean onProjectileImpact(FireworkRocketEntity fireworkRocket, RayTraceResult ray)
+    {
+        return MinecraftForge.EVENT_BUS.post(new ProjectileImpactEvent.FireworkRocket(fireworkRocket, ray));
     }
 
     public static LootTable loadLootTable(ResourceLocation name, LootTable table, LootTableManager lootTableManager)

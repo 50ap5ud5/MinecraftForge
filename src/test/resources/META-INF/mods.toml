@@ -2,6 +2,8 @@ modLoader="javafml"
 loaderVersion="[28,)"
 
 [[mods]]
+    modId="mark_dimension_for_deletion_test"
+[[mods]]
 	modId="containertypetest"
 [[mods]]
     modId="potion_event_test"
@@ -10,6 +12,7 @@ loaderVersion="[28,)"
 [[mods]]
     modId="farmland_trample_test"
 [[mods]]
+
     modId="neighbor_notify_event_test"
 [[mods]]
     modId="block_place_event_test"
@@ -47,6 +50,12 @@ loaderVersion="[28,)"
     modId="nameplate_render_test"
 [[mods]]
     modId="global_loot_test"
+[[dependencies.global_loot_test]]
+    modId="forge"
+    mandatory=true
+    versionRange="[1,)"
+    ordering="AFTER"
+    side="BOTH"
 [[mods]]
     modId="custom_plant_type_test"
 [[mods]]
@@ -57,9 +66,9 @@ loaderVersion="[28,)"
     modId="music_disc_test"
 [[mods]]
     modId="stencil_enable_test"
-[[dependencies.global_loot_test]]
-    modId="forge"
-    mandatory=true
-    versionRange="[1,)"
-    ordering="AFTER"
-    side="BOTH"
+[[mods]]
+    modId="deferred_registry_test"
+[[mods]]
+    modId="player_name_event_test"
+[[mods]]
+    modId="custom_elytra_test"
