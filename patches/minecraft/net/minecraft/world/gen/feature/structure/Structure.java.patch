@@ -9,6 +9,15 @@
     public static final BiMap<String, Structure<?>> field_236365_a_ = HashBiMap.create();
     private static final Map<Structure<?>, GenerationStage.Decoration> field_236385_u_ = Maps.newHashMap();
     private static final Logger field_208204_b = LogManager.getLogger();
+@@ -60,7 +60,7 @@
+    public static final Structure<VillageConfig> field_236381_q_ = func_236394_a_("Village", new VillageStructure(VillageConfig.field_236533_a_), GenerationStage.Decoration.SURFACE_STRUCTURES);
+    public static final Structure<NoFeatureConfig> field_236382_r_ = func_236394_a_("Nether_Fossil", new NetherFossilStructure(NoFeatureConfig.field_236558_a_), GenerationStage.Decoration.UNDERGROUND_DECORATION);
+    public static final Structure<VillageConfig> field_236383_s_ = func_236394_a_("Bastion_Remnant", new BastionRemantsStructure(VillageConfig.field_236533_a_), GenerationStage.Decoration.SURFACE_STRUCTURES);
+-   public static final List<Structure<?>> field_236384_t_ = ImmutableList.of(field_236366_b_, field_236381_q_, field_236382_r_);
++   public static List<Structure<?>> field_236384_t_ = ImmutableList.of(field_236366_b_, field_236381_q_, field_236382_r_);
+    private static final ResourceLocation field_242783_w = new ResourceLocation("jigsaw");
+    private static final Map<ResourceLocation, ResourceLocation> field_242784_x = ImmutableMap.<ResourceLocation, ResourceLocation>builder().put(new ResourceLocation("nvi"), field_242783_w).put(new ResourceLocation("pcp"), field_242783_w).put(new ResourceLocation("bastionremnant"), field_242783_w).put(new ResourceLocation("runtime"), field_242783_w).build();
+    private final Codec<StructureFeature<C, Structure<C>>> field_236386_w_;
 @@ -237,13 +237,18 @@
     }
  

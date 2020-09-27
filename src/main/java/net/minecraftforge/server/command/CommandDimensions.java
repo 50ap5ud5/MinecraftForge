@@ -46,7 +46,6 @@ public class CommandDimensions
             .executes(ctx -> {
                 ctx.getSource().sendFeedback(new TranslationTextComponent("commands.forge.dimensions.list"), true);
                 final Registry<DimensionType> reg = ctx.getSource().func_241861_q().getRegistry(Registry.DIMENSION_TYPE_KEY);
-
                 Map<ResourceLocation, List<ResourceLocation>> types = new HashMap<>();
                 for (ServerWorld dim : ctx.getSource().getServer().getWorlds()) {
                     types.computeIfAbsent(reg.getKey(dim.getDimensionType()), k -> new ArrayList<>()).add(dim.getDimensionKey().getLocation());

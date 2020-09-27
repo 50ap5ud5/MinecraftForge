@@ -202,6 +202,7 @@ public class ClientHooks
         {
             GameData.revertToFrozen();
         }
+        net.minecraftforge.dimension.DynamicDimensionManager.getDimensionManager().onIntegratedServerStop();
     }
 
 

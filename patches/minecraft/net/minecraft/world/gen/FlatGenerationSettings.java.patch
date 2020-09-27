@@ -1,5 +1,14 @@
 --- a/net/minecraft/world/gen/FlatGenerationSettings.java
 +++ b/net/minecraft/world/gen/FlatGenerationSettings.java
+@@ -46,7 +46,7 @@
+          return Optional.of(p_242868_0_.field_82654_c);
+       })).apply(p_236938_0_, FlatGenerationSettings::new);
+    }).stable();
+-   private static final Map<Structure<?>, StructureFeature<?, ?>> field_202247_j = Util.func_200696_a(Maps.newHashMap(), (p_236940_0_) -> {
++   public static Map<Structure<?>, StructureFeature<?, ?>> field_202247_j = Util.func_200696_a(Maps.newHashMap(), (p_236940_0_) -> {
+       p_236940_0_.put(Structure.field_236367_c_, StructureFeatures.field_244136_b);
+       p_236940_0_.put(Structure.field_236381_q_, StructureFeatures.field_244154_t);
+       p_236940_0_.put(Structure.field_236375_k_, StructureFeatures.field_244145_k);
 @@ -174,7 +174,7 @@
           }
        }
