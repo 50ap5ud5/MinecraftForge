@@ -199,5 +199,4 @@ public class DynamicDimensionManager {
     protected Registry<Biome> getBiomeRegistry() {
         return this.dynamicRegistries.getRegistry(Registry.BIOME_KEY);
     }
-
 }
