@@ -1,0 +1,12 @@
+{
+  "generator": {
+    "type": "minecraft:noise",
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "minecraft:plains"
+    },
+    "seed": 0,
+    "settings": "chunk_save_test:test_dim"
+  },
+  "type": "chunk_save_test:test_dim"
+}

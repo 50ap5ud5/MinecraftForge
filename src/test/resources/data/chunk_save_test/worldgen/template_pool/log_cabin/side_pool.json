@@ -1,0 +1,15 @@
+{
+  "name": "chunk_save_test:log_cabin/side_pool",
+  "fallback": "minecraft:empty",
+  "elements": [
+    {
+      "weight": 1,
+      "element": {
+        "location": "chunk_save_test:log_cabin_right_side",
+        "processors": "minecraft:empty",
+        "projection": "rigid",
+        "element_type": "minecraft:single_pool_element"
+      }
+    }
+  ]
+}
