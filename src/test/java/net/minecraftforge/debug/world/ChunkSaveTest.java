@@ -33,6 +33,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Codec;
 
+import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntityType;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
@@ -45,13 +46,16 @@ import net.minecraft.util.registry.WorldGenRegistries;
 import net.minecraft.world.ISeedReader;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.BiomeAmbience;
+import net.minecraft.world.biome.BiomeGenerationSettings;
+import net.minecraft.world.biome.DefaultBiomeFeatures;
 import net.minecraft.world.biome.MobSpawnInfo;
+import net.minecraft.world.biome.MoodSoundAmbience;
 import net.minecraft.world.gen.ChunkGenerator;
 import net.minecraft.world.gen.FlatChunkGenerator;
 import net.minecraft.world.gen.FlatGenerationSettings;
 import net.minecraft.world.gen.GenerationStage.Decoration;
 import net.minecraft.world.gen.Heightmap.Type;
-import net.minecraft.world.gen.WorldGenRegion;
 import net.minecraft.world.gen.feature.ConfiguredFeature;
 import net.minecraft.world.gen.feature.Feature;
 import net.minecraft.world.gen.feature.IFeatureConfig;
@@ -67,7 +71,10 @@ import net.minecraft.world.gen.feature.template.Template;
 import net.minecraft.world.gen.feature.template.TemplateManager;
 import net.minecraft.world.gen.settings.DimensionStructuresSettings;
 import net.minecraft.world.gen.settings.StructureSeparationSettings;
+import net.minecraft.world.gen.surfacebuilders.ConfiguredSurfaceBuilders;
 import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.common.BiomeManager;
+import net.minecraftforge.common.BiomeManager.BiomeEntry;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.BiomeLoadingEvent;
 import net.minecraftforge.event.world.WorldEvent;
@@ -86,13 +93,17 @@ public class ChunkSaveTest {
   public static final Logger LOGGER = LogManager.getLogger(MODID);
   
   public static ResourceLocation DIMENSION_LOC = new ResourceLocation(MODID,"test_dim");
+  public static ResourceLocation BIOME_LOC = new ResourceLocation(MODID,"test_biome");
   
   public static RegistryKey<World> TEST_WORLD;
+  
+  public static RegistryKey<Biome> TEST_BIOME;
  
   public ChunkSaveTest() {
       FMLJavaModLoadingContext.get().getModEventBus().register(this);
       Structures.STRUCTURES.register(FMLJavaModLoadingContext.get().getModEventBus());
       Features.FEATURES.register(FMLJavaModLoadingContext.get().getModEventBus());
+      Biomes.BIOMES.register(FMLJavaModLoadingContext.get().getModEventBus());
       FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
       IEventBus forgeBus = MinecraftForge.EVENT_BUS;
       forgeBus.register(this);
@@ -106,11 +117,11 @@ public class ChunkSaveTest {
           ConfiguredStructures.registerConfiguredStructures();
           ConfiguredFeatures.registerConfiguredFeatures();
           TEST_WORLD = RegistryKey.getOrCreateKey(Registry.WORLD_KEY, DIMENSION_LOC);
+          TEST_BIOME = RegistryKey.getOrCreateKey(Registry.BIOME_KEY, BIOME_LOC);
+          BiomeManager.addBiome(BiomeManager.BiomeType.WARM, new BiomeEntry(TEST_BIOME, 1));
       });
   }
-  
-  
-  /* Structure and Feature Related */
+
   public void biomeModification(final BiomeLoadingEvent event) {
       event.getGeneration().getStructures().add(() -> ConfiguredStructures.CONFIGURED_LOG_CABIN);
       event.getGeneration().getFeatures(Decoration.SURFACE_STRUCTURES).add(() -> ConfiguredFeatures.CONFIGURED_TEST_HOUSE);
@@ -135,6 +146,29 @@ public class ChunkSaveTest {
           serverWorld.getChunkProvider().generator.func_235957_b_().field_236193_d_ = tempMap;
       }
  }
+  
+  /* Biomes */
+  public static class Biomes{
+      public static final DeferredRegister<Biome> BIOMES = DeferredRegister.create(ForgeRegistries.BIOMES, ChunkSaveTest.MODID);
+      
+      public static final RegistryObject<Biome> TEST = BIOMES.register("test_biome", () -> createTestBiome());
+      
+      public static Biome createTestBiome(){
+          MobSpawnInfo.Builder spawns = new MobSpawnInfo.Builder();
+
+          spawns.withSpawner(EntityClassification.CREATURE, new MobSpawnInfo.Spawners(EntityType.RABBIT, 100, 2, 4));
+          spawns.withSpawner(EntityClassification.CREATURE, new MobSpawnInfo.Spawners(EntityType.COW, 50, 1, 3));
+          spawns.withSpawner(EntityClassification.CREATURE, new MobSpawnInfo.Spawners(EntityType.HORSE, 50, 1, 6));
+          
+          BiomeGenerationSettings.Builder builder = (new BiomeGenerationSettings.Builder()).withSurfaceBuilder(ConfiguredSurfaceBuilders.field_244178_j);
+
+          DefaultBiomeFeatures.withMonsterRoom(builder);
+          DefaultBiomeFeatures.withOverworldOres(builder);
+          
+          return (new Biome.Builder()).precipitation(Biome.RainType.NONE).category(Biome.Category.PLAINS).depth(0.1F).scale(0.2F).temperature(0.5F).downfall(0.4F).setEffects((new BiomeAmbience.Builder()).setWaterColor(4159204).setWaterFogColor(329011).setFogColor(0xbec4ee).withSkyColor(0xbec4ee).setMoodSound(MoodSoundAmbience.DEFAULT_CAVE).build()).withMobSpawnSettings(spawns.copy()).withGenerationSettings(builder.build()).build();
+      }
+  }
+
   
   /* Features */
   public static class Features{
