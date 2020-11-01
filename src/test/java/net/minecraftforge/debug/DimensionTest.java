@@ -64,7 +64,6 @@ public class DimensionTest {
     
     private boolean REGISTER_ON_EVENT = false;
     
-    
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, MODID);
     public static final RegistryObject<Block> TEST_DIM_CREATOR = BLOCKS.register("test_dim_creator", () -> new TestBlock(AbstractBlock.Properties.create(Material.IRON)));
     
@@ -95,16 +94,14 @@ public class DimensionTest {
                  });
                 DimensionType test_dim_type = DynamicDimensionManager.getDimensionManager().getDimensionType(new ResourceLocation("minecraft", "overworld")); //This must be a local variable as dim types will only be created after player logs in
                 Dimension test_dim = new Dimension(() -> test_dim_type, chunk_gen);
-                RegistryKey<World> TEST_DIM_WORLD = RegistryKey.func_240903_a_(Registry.field_239699_ae_, test_dim_loc);
-                RegistryKey<Dimension> TEST_DIM_DIMENSION = RegistryKey.func_240903_a_(Registry.field_239700_af_, test_dim_loc);
+                RegistryKey<World> TEST_DIM_WORLD = RegistryKey.getOrCreateKey(Registry.WORLD_KEY, test_dim_loc);
+                RegistryKey<Dimension> TEST_DIM_DIMENSION = RegistryKey.getOrCreateKey(Registry.DIMENSION_KEY, test_dim_loc);
                 DynamicDimensionManager.getDimensionManager().registerDimension(test_dim_loc, test_dim);
                 DynamicDimensionManager.getDimensionManager().loadOrCreateDimension(worldIn.getServer(), test_dim_loc);
                 LOGGER.info("Registered new Dimension of {}", test_dim_loc);
             }
             return ActionResultType.PASS;
         }
-        
-        
         
     }
     
