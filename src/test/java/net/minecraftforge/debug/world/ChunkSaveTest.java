@@ -22,6 +22,7 @@ package net.minecraftforge.debug.world;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.function.Supplier;
 
 import org.apache.logging.log4j.Level;
@@ -35,11 +36,13 @@ import com.mojang.serialization.Codec;
 import net.minecraft.entity.EntityType;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.concurrent.TickDelayedTask;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MutableBoundingBox;
 import net.minecraft.util.registry.DynamicRegistries;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.WorldGenRegistries;
+import net.minecraft.world.ISeedReader;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.MobSpawnInfo;
@@ -47,6 +50,9 @@ import net.minecraft.world.gen.ChunkGenerator;
 import net.minecraft.world.gen.FlatChunkGenerator;
 import net.minecraft.world.gen.FlatGenerationSettings;
 import net.minecraft.world.gen.GenerationStage.Decoration;
+import net.minecraft.world.gen.Heightmap.Type;
+import net.minecraft.world.gen.WorldGenRegion;
+import net.minecraft.world.gen.feature.ConfiguredFeature;
 import net.minecraft.world.gen.feature.Feature;
 import net.minecraft.world.gen.feature.IFeatureConfig;
 import net.minecraft.world.gen.feature.NoFeatureConfig;
@@ -56,6 +62,8 @@ import net.minecraft.world.gen.feature.structure.AbstractVillagePiece;
 import net.minecraft.world.gen.feature.structure.Structure;
 import net.minecraft.world.gen.feature.structure.StructureStart;
 import net.minecraft.world.gen.feature.structure.VillageConfig;
+import net.minecraft.world.gen.feature.template.PlacementSettings;
+import net.minecraft.world.gen.feature.template.Template;
 import net.minecraft.world.gen.feature.template.TemplateManager;
 import net.minecraft.world.gen.settings.DimensionStructuresSettings;
 import net.minecraft.world.gen.settings.StructureSeparationSettings;
@@ -84,6 +92,7 @@ public class ChunkSaveTest {
   public ChunkSaveTest() {
       FMLJavaModLoadingContext.get().getModEventBus().register(this);
       Structures.STRUCTURES.register(FMLJavaModLoadingContext.get().getModEventBus());
+      Features.FEATURES.register(FMLJavaModLoadingContext.get().getModEventBus());
       FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
       IEventBus forgeBus = MinecraftForge.EVENT_BUS;
       forgeBus.register(this);
@@ -95,6 +104,7 @@ public class ChunkSaveTest {
       event.enqueueWork(() -> {
           Structures.setupStructures();
           ConfiguredStructures.registerConfiguredStructures();
+          ConfiguredFeatures.registerConfiguredFeatures();
           TEST_WORLD = RegistryKey.getOrCreateKey(Registry.WORLD_KEY, DIMENSION_LOC);
       });
   }
@@ -103,6 +113,7 @@ public class ChunkSaveTest {
   /* Structure and Feature Related */
   public void biomeModification(final BiomeLoadingEvent event) {
       event.getGeneration().getStructures().add(() -> ConfiguredStructures.CONFIGURED_LOG_CABIN);
+      event.getGeneration().getFeatures(Decoration.SURFACE_STRUCTURES).add(() -> ConfiguredFeatures.CONFIGURED_TEST_HOUSE);
   }
   
   public void addDimensionalSpacing(final WorldEvent.Load event) {
@@ -125,10 +136,58 @@ public class ChunkSaveTest {
       }
  }
   
+  /* Features */
   public static class Features{
       public static final DeferredRegister<Feature<?>> FEATURES = DeferredRegister.create(ForgeRegistries.FEATURES, ChunkSaveTest.MODID);
+      
+      public static final RegistryObject<TestHouseFeature> TEST_HOUSE = FEATURES.register("test_house", () -> (new TestHouseFeature(NoFeatureConfig.field_236558_a_)));
   }
   
+  public static class ConfiguredFeatures {
+      public static ConfiguredFeature<?,?> CONFIGURED_TEST_HOUSE = Features.TEST_HOUSE.get().withConfiguration(IFeatureConfig.NO_FEATURE_CONFIG);
+      
+      
+      public static void registerConfiguredFeatures() {
+          Registry<ConfiguredFeature<?, ?>> registry = WorldGenRegistries.CONFIGURED_FEATURE;
+          Registry.register(registry, new ResourceLocation(ChunkSaveTest.MODID, "configured_test_house"), CONFIGURED_TEST_HOUSE);
+      }
+  }
+  
+  public static class TestHouseFeature extends Feature<NoFeatureConfig>{
+    
+    public static final ResourceLocation HOUSE = new ResourceLocation(MODID, "worldgen/feature/test_house");  
+    
+    public TestHouseFeature(Codec<NoFeatureConfig> codec) {
+        super(codec);
+    }
+
+    @Override
+    public boolean generate(ISeedReader reader, ChunkGenerator generator, Random rand, BlockPos pos,
+            NoFeatureConfig config) {
+        BlockPos blockpos = reader.getHeight(Type.WORLD_SURFACE_WG, pos).down();
+        TemplateManager tempM = reader.getWorld().getServer().getTemplateManager();
+        Template temp = tempM.getTemplate(Features.TEST_HOUSE.get().getRegistryName());
+        if (temp != null) {
+            reader.getWorld().getServer().enqueue(new TickDelayedTask(1, () -> {
+                if (doesStartInChunk(blockpos)) {
+                    PlacementSettings settings = new PlacementSettings().setIgnoreEntities(false);
+                    temp.func_237144_a_(reader.getWorld(), blockpos, settings, rand); //addBlocksToWorld
+                    ChunkSaveTest.LOGGER.log(Level.INFO, "Test House at: " + blockpos.getX() + " " + blockpos.getY() + " " + blockpos.getZ());
+                }
+            }));
+            return true;
+        }
+        return false;
+    }
+    
+    public boolean doesStartInChunk(BlockPos pos){
+        return pos.getX() >> 4 == 0 >> 4 && pos.getZ() >> 4 == 0 >> 4;
+    }
+
+      
+  }
+  
+  /* Structures */
   public static class Structures{
       
       public static final DeferredRegister<Structure<?>> STRUCTURES = DeferredRegister.create(ForgeRegistries.STRUCTURE_FEATURES, ChunkSaveTest.MODID);
