@@ -54,6 +54,7 @@ import net.minecraft.world.biome.MoodSoundAmbience;
 import net.minecraft.world.gen.ChunkGenerator;
 import net.minecraft.world.gen.FlatChunkGenerator;
 import net.minecraft.world.gen.FlatGenerationSettings;
+import net.minecraft.world.gen.Heightmap;
 import net.minecraft.world.gen.GenerationStage.Decoration;
 import net.minecraft.world.gen.Heightmap.Type;
 import net.minecraft.world.gen.feature.ConfiguredFeature;
@@ -118,7 +119,7 @@ public class ChunkSaveTest {
           ConfiguredFeatures.registerConfiguredFeatures();
           TEST_WORLD = RegistryKey.getOrCreateKey(Registry.WORLD_KEY, DIMENSION_LOC);
           TEST_BIOME = RegistryKey.getOrCreateKey(Registry.BIOME_KEY, BIOME_LOC);
-          BiomeManager.addBiome(BiomeManager.BiomeType.WARM, new BiomeEntry(TEST_BIOME, 1));
+          BiomeManager.addBiome(BiomeManager.BiomeType.WARM, new BiomeEntry(TEST_BIOME, 10));
       });
   }
 
@@ -198,13 +199,17 @@ public class ChunkSaveTest {
     @Override
     public boolean generate(ISeedReader reader, ChunkGenerator generator, Random rand, BlockPos pos,
             NoFeatureConfig config) {
-        BlockPos blockpos = reader.getHeight(Type.WORLD_SURFACE_WG, pos).down();
         TemplateManager tempM = reader.getWorld().getServer().getTemplateManager();
         Template temp = tempM.getTemplate(Features.TEST_HOUSE.get().getRegistryName());
         if (temp != null) {
+            PlacementSettings settings = new PlacementSettings().setIgnoreEntities(false);
+            MutableBoundingBox mutableboundingbox = temp.getMutableBoundingBox(settings, pos);
+            int x = (mutableboundingbox.maxX + mutableboundingbox.minX) / 2;
+            int z = (mutableboundingbox.maxZ + mutableboundingbox.minZ) / 2;
+            int y = pos.getY() + generator.getNoiseHeight(x, z, Heightmap.Type.WORLD_SURFACE_WG);
+            BlockPos blockpos = new BlockPos(x,y,z);
             reader.getWorld().getServer().enqueue(new TickDelayedTask(1, () -> {
                 if (doesStartInChunk(blockpos)) {
-                    PlacementSettings settings = new PlacementSettings().setIgnoreEntities(false);
                     temp.func_237144_a_(reader.getWorld(), blockpos, settings, rand); //addBlocksToWorld
                     ChunkSaveTest.LOGGER.log(Level.INFO, "Test House at: " + blockpos.getX() + " " + blockpos.getY() + " " + blockpos.getZ());
                 }
@@ -334,7 +339,7 @@ public class ChunkSaveTest {
          // Turns the chunk coordinates into actual coordinates we can use. (Gets center of that chunk)
             int x = (chunkX << 4) + 7;
             int z = (chunkZ << 4) + 7;
-            BlockPos blockpos = new BlockPos(x, 64, z); //hardcode the y pos for now
+            BlockPos blockpos = new BlockPos(x, 0, z); //hardcode the y pos for now. Set it to 0 so that when the last boolean of func_242837_a is true, structure is placed at surface level.
             JigsawManager.func_242837_a(dynamicRegistryManager,
                     new VillageConfig(() -> dynamicRegistryManager.getRegistry(Registry.JIGSAW_POOL_KEY)
                             // The path to the starting Template Pool JSON file to read.
