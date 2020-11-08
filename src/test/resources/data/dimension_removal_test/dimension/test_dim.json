@@ -1,0 +1,12 @@
+{
+  "generator": {
+    "type": "minecraft:noise",
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "minecraft:plains"
+    },
+    "seed": 0,
+    "settings": "dimension_removal_test:test_dim"
+  },
+  "type": "dimension_removal_test:test_dim"
+}
